@@ -21,3 +21,17 @@ jobs:
             
             - name: Run buildprod.sh
               run: scripts/buildprod.sh
+            
+            - id: auth
+              uses: google-github-actions/auth@v2
+              with:
+                credentails_json: ${{ secrets.GCP_CREDENTIALS }}
+
+            - name: Set up Cloud SDK
+              uses: google-github-actions/setup-gcloud@v2
+
+            - name: Use gcloud CLI
+              run: gcloud info
+            
+            - name: Build and push Docker image
+              uses: gcloud builds submit --tag us-west1-docker.pkg.dev/serene-boulder-455518-s1/notely-ar-repo/notely:latest .
