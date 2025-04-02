@@ -9,6 +9,8 @@ jobs:
         name: Deploy
         runs-on: ubuntu-latest
         timeout-minutes: 30
+        env:
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
         steps:
             - name: Check out code
@@ -19,6 +21,9 @@ jobs:
               with:
                 go-version: "1.23.0"
             
+            - name: Install goose
+              uses: mscno/setup-goose@v1
+              
             - name: Run buildprod.sh
               run: scripts/buildprod.sh
             
@@ -35,6 +40,9 @@ jobs:
             
             - name: Build and push Docker image
               run: gcloud builds submit --tag us-west1-docker.pkg.dev/serene-boulder-455518-s1/notely-ar-repo/notely:latest .
+
+            - name: Run migrations
+              run: ./scripts/migrateup.sh
 
             - name: Deploy to Cloud Run
               run: gcloud run deploy notely --image us-west1-docker.pkg.dev/serene-boulder-455518-s1/notely-ar-repo/notely:latest --region us-central1 --allow-unauthenticated --project serene-boulder-455518-s1 --max-instances=4
